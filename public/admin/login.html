@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<link rel="manifest" href="/admin/manifest.json" />
+<meta name="theme-color" content="#7c3aed" />
+<link rel="apple-touch-icon" href="/logo.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WC Açaíteria • Login Admin</title>
+  <style>
+    :root{
+      --bg:#0b0b10;
+      --card:#12121a;
+      --border:#24243a;
+      --muted:#b9b9c8;
+      --accent:#7c3aed;
+      --input:#0f0f16;
+      --danger:#ff7a7a;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background: radial-gradient(900px 500px at 20% 10%, rgba(124,58,237,.18), transparent 60%),
+                  radial-gradient(700px 450px at 90% 20%, rgba(124,58,237,.12), transparent 55%),
+                  var(--bg);
+      color:#fff;
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      padding:18px;
+    }
+    .card{
+      width:min(420px, 96vw);
+      background: rgba(18,18,26,.92);
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:22px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-bottom:14px;
+    }
+    .logo{
+      width:38px;height:38px;border-radius:12px;
+      background: rgba(124,58,237,.18);
+      border:1px solid rgba(124,58,237,.35);
+      display:grid; place-items:center;
+      font-weight:900;
+      color:#e9ddff;
+    }
+    h1{
+      margin:0;
+      font-size:16px;
+      letter-spacing:.2px;
+    }
+    p{
+      margin:6px 0 16px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.35;
+    }
+    label{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      margin:0 0 6px;
+    }
+    input{
+      width:100%;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid #2c2c45;
+      background: var(--input);
+      color:#fff;
+      outline:none;
+      font-size:14px;
+    }
+    input:focus{
+      border-color: rgba(124,58,237,.7);
+      box-shadow: 0 0 0 4px rgba(124,58,237,.15);
+    }
+    button{
+      width:100%;
+      margin-top:12px;
+      padding:12px 14px;
+      border-radius:14px;
+      border:0;
+      background: var(--accent);
+      color:white;
+      font-weight:800;
+      cursor:pointer;
+      font-size:14px;
+    }
+    button:active{ transform: translateY(1px); }
+    .err{
+      min-height:18px;
+      margin-top:10px;
+      color:var(--danger);
+      font-size:13px;
+    }
+    .hint{
+      margin-top:12px;
+      color:#9aa0b5;
+      font-size:12px;
+      opacity:.9;
+    }
+    .row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-top:10px;
+      color:#9aa0b5;
+      font-size:12px;
+    }
+    a{ color:#cdb8ff; text-decoration:none; }
+    a:hover{ text-decoration:underline; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">
+      <div class="logo">WC</div>
+      <div>
+        <h1>Admin • WC Açaíteria</h1>
+        <p>Entre com a senha para acessar o painel de pedidos.</p>
+      </div>
+    </div>
+
+    <form id="form">
+      <label for="password">Senha do administrador</label>
+      <input id="password" type="password" autocomplete="current-password" placeholder="Digite a senha" />
+
+      <button id="btn" type="submit">Entrar</button>
+      <div class="err" id="err"></div>
+
+      <div class="row">
+        <span>Rede local</span>
+        <span><a href="/" title="Voltar para o início">Voltar</a></span>
+      </div>
+      <div class="hint">Dica: troque a senha no arquivo <b>.env</b> do servidor.</div>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('form');
+    const password = document.getElementById('password');
+    const err = document.getElementById('err');
+    const btn = document.getElementById('btn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      err.textContent = "";
+
+      const pw = password.value.trim();
+      if (!pw) {
+        err.textContent = "Digite a senha.";
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "Entrando...";
+
+      try {
+        const resp = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ password: pw })
+        });
+
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok || !data.ok) {
+          err.textContent = data.erro || "Senha inválida.";
+          return;
+        }
+
+        window.location.href = "/admin";
+      } catch (e) {
+        err.textContent = "Falha de conexão com o servidor.";
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Entrar";
+      }
+    });
+  </script>
+  <script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", async () => {
+      try {
+        await navigator.serviceWorker.register("/service-worker.js");
+      } catch (e) {}
+    });
+  }
+</script>
+<script src="/pwa.js" defer></script>
+</body>
+</html>

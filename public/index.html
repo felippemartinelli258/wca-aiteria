@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WC Açaíteria</title>
+
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#7c3aed" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="apple-touch-icon" href="/logo.png" />
+
+<style>
+body{
+  margin:0;
+  font-family: Arial, sans-serif;
+  background:#f5f5f5;
+}
+
+.header{
+  background:#4b006e;
+  color:white;
+  padding:30px 20px;
+  text-align:center;
+}
+.header img{ width:120px; }
+
+.section{
+  padding:20px;
+  max-width:900px;
+  margin:auto;
+}
+h2{ color:#4b006e; margin-bottom:15px; }
+
+.card{
+  background:white;
+  border-radius:15px;
+  padding:15px;
+  display:flex;
+  align-items:center;
+  gap:15px;
+  margin-bottom:15px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.08);
+  cursor:pointer;
+  transition:0.2s;
+}
+.card:hover{ transform:scale(1.01); }
+.card img{
+  width:90px; height:90px; object-fit:cover; border-radius:12px;
+}
+.card.selected{ border:2px solid #4b006e; }
+.card-info{ flex:1; }
+.card-title{ font-weight:bold; }
+.card-price{ color:#4b006e; font-weight:bold; margin-top:5px; }
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+  gap:15px;
+}
+.item{
+  background:white;
+  border-radius:15px;
+  padding:10px;
+  text-align:center;
+  box-shadow:0 2px 10px rgba(0,0,0,0.08);
+  cursor:pointer;
+  transition:0.2s;
+}
+.item img{
+  width:100%;
+  height:100px;
+  object-fit:cover;
+  border-radius:10px;
+}
+.item.selected{ border:2px solid #4b006e; }
+
+.footer{
+  position:fixed;
+  bottom:0;
+  width:100%;
+  background:white;
+  padding:15px 20px;
+  box-shadow:0 -2px 10px rgba(0,0,0,0.1);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  box-sizing:border-box;
+}
+.footer button{
+  background:#4b006e;
+  color:white;
+  border:none;
+  padding:12px 20px;
+  border-radius:10px;
+  font-weight:bold;
+  cursor:pointer;
+}
+main{ padding-bottom:130px; }
+
+/* FORM */
+.form{
+  background:#fff;
+  border-radius:16px;
+  padding:14px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.08);
+  margin-top:12px;
+}
+.row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+@media (max-width:640px){
+  .row{ grid-template-columns:1fr; }
+}
+.label{ font-size:13px; color:#4b006e; font-weight:bold; margin:8px 0 6px; }
+.input, .select{
+  width:100%;
+  padding:12px 12px;
+  border-radius:12px;
+  border:1px solid #ddd;
+  outline:none;
+}
+.small{ font-size:12px; color:#666; margin-top:6px; }
+
+/* little status message */
+.note{
+  margin-top:10px;
+  font-size:12px;
+  color:#2f6b2f;
+  background:#eefbe9;
+  border:1px solid #cfecc6;
+  padding:10px 12px;
+  border-radius:12px;
+  display:none;
+}
+
+/* MODAL */
+.modal-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.5);
+  backdrop-filter:blur(5px);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  opacity:0;
+  pointer-events:none;
+  transition:0.3s;
+}
+.modal-overlay.active{ opacity:1; pointer-events:all; }
+
+.modal{
+  background:white;
+  width:92%;
+  max-width:420px;
+  border-radius:20px;
+  padding:22px;
+  box-shadow:0 20px 40px rgba(0,0,0,0.3);
+  transform:translateY(30px);
+  transition:0.3s;
+}
+.modal-overlay.active .modal{ transform:translateY(0); }
+.modal h3{ margin-top:0; color:#4b006e; }
+.modal-buttons{
+  margin-top:20px;
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+}
+.cancel{
+  background:#ddd;
+  border:none;
+  padding:10px 15px;
+  border-radius:10px;
+  cursor:pointer;
+  flex:1;
+}
+.confirm{
+  background:#4b006e;
+  color:white;
+  border:none;
+  padding:10px 15px;
+  border-radius:10px;
+  cursor:pointer;
+  flex:1;
+}
+</style>
+</head>
+
+<body>
+<div class="header">
+  <img src="logo.png" alt="WC Açaíteria">
+</div>
+
+<main>
+  <div class="section">
+    <h2>Seu pedido</h2>
+
+    <!-- ✅ Só aparece se existir último pedido salvo -->
+    <div id="boxUltimo" style="display:none;margin:12px 0;">
+      <button
+        style="background:#fff;border:1px solid #ddd;padding:10px 12px;border-radius:10px;cursor:pointer;font-weight:bold;color:#4b006e;"
+        onclick="irUltimoPedido()"
+      >
+        📦 Acompanhar último pedido
+      </button>
+    </div>
+
+    <div class="form">
+      <div class="row">
+        <div>
+          <div class="label">Seu telefone (WhatsApp) *</div>
+          <input class="input" id="telefone" inputmode="tel" placeholder="Ex: (79) 99999-9999" />
+          <div class="small">Obrigatório. Serve para reconhecer seu cadastro.</div>
+        </div>
+
+        <div>
+          <div class="label">Seu nome</div>
+          <input class="input" id="nomeCliente" placeholder="Ex: João" />
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px;">
+        <div>
+          <div class="label">Entrega ou Retirada?</div>
+          <select class="select" id="tipoEntrega">
+            <option value="Retirada">Retirada</option>
+            <option value="Entrega">Entrega</option>
+          </select>
+          <div class="small">Entrega pede endereço completo.</div>
+        </div>
+
+        <div>
+          <div class="label">—</div>
+          <div class="small">Ao digitar o telefone, o sistema pode preencher seus dados automaticamente.</div>
+        </div>
+      </div>
+
+      <div id="boxEntrega" style="display:none;margin-top:10px;">
+        <div class="label">Endereço completo</div>
+        <input class="input" id="endereco" placeholder="Rua, número, bairro, cidade" />
+        <div class="label">Referência (opcional)</div>
+        <input class="input" id="referencia" placeholder="Ex: perto da igreja..." />
+      </div>
+
+      <div class="note" id="clienteNote">✅ Dados encontrados! Preenchemos seu cadastro automaticamente.</div>
+    </div>
+
+    <hr>
+
+    <h2>Escolha o tamanho</h2>
+
+    <div class="card" onclick="selecionarTamanho(this,'300ml',10,5)">
+      <img src="images/tamanhos/300ml.jpg">
+      <div class="card-info">
+        <div class="card-title">300ml</div>
+        <div>Ideal para matar a vontade</div>
+        <div class="card-price">R$ 10 (até 5 acompanhamentos)</div>
+      </div>
+    </div>
+
+    <div class="card" onclick="selecionarTamanho(this,'400ml',12,5)">
+      <img src="images/tamanhos/400ml.jpg">
+      <div class="card-info">
+        <div class="card-title">400ml</div>
+        <div>Perfeito para saborear</div>
+        <div class="card-price">R$ 12 (até 5 acompanhamentos)</div>
+      </div>
+    </div>
+
+    <div class="card" onclick="selecionarTamanho(this,'500ml',15,6)">
+      <img src="images/tamanhos/500ml.jpg">
+      <div class="card-info">
+        <div class="card-title">500ml</div>
+        <div>Para quem ama açaí</div>
+        <div class="card-price">R$ 15 (até 6 acompanhamentos)</div>
+      </div>
+    </div>
+
+    <div class="card" onclick="selecionarTamanho(this,'700ml',20,6)">
+      <img src="images/tamanhos/700ml.jpg">
+      <div class="card-info">
+        <div class="card-title">700ml</div>
+        <div>Para dividir ou se deliciar</div>
+        <div class="card-price">R$ 20 (até 6 acompanhamentos)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Acompanhamentos (<span id="contador">0</span>/<span id="limite">0</span>)</h2>
+    <div class="grid" id="grid"></div>
+  </div>
+</main>
+
+<div class="footer">
+  <div><strong>Total: R$ <span id="total">0</span></strong></div>
+  <button onclick="abrirModal()">Finalizar Pedido</button>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3>Confirmar Pedido</h3>
+    <div id="resumoPedido"></div>
+    <div class="modal-buttons">
+      <button class="cancel" onclick="fecharModal()">Cancelar</button>
+      <button class="confirm" onclick="confirmarPedido()">Confirmar</button>
+    </div>
+    <div class="small" id="modalErro" style="color:#b91c1c;margin-top:10px;"></div>
+  </div>
+</div>
+
+<script src="/pwa.js" defer></script>
+<script>
+let tamanhoValor = 0;
+let tamanhoNome = "";
+let limiteAtual = 0;
+let selecionados = [];
+
+const acompanhamentos = [
+  "castanha","amendoim","nutella","creme-ninho",
+  "cereja","marshmallow","leite-em-po","granola",
+  "gotas-chocolate","morango","kiwi"
+];
+
+const grid = document.getElementById("grid");
+const contador = document.getElementById("contador");
+const limite = document.getElementById("limite");
+const total = document.getElementById("total");
+
+const telefoneEl = document.getElementById("telefone");
+const nomeClienteEl = document.getElementById("nomeCliente");
+const tipoEntregaEl = document.getElementById("tipoEntrega");
+const boxEntrega = document.getElementById("boxEntrega");
+const enderecoEl = document.getElementById("endereco");
+const referenciaEl = document.getElementById("referencia");
+const clienteNote = document.getElementById("clienteNote");
+
+function onlyDigits(s){ return String(s||"").replace(/\D/g,""); }
+function isValidBRPhone(d){ return d.length === 10 || d.length === 11; }
+
+tipoEntregaEl.addEventListener("change", () => {
+  boxEntrega.style.display = (tipoEntregaEl.value === "Entrega") ? "block" : "none";
+});
+
+acompanhamentos.forEach(nome=>{
+  const div = document.createElement("div");
+  div.classList.add("item");
+  div.innerHTML = `
+    <img src="images/acompanhamentos/${nome}.jpg">
+    <div>${nome.replace("-", " ")}</div>
+  `;
+  div.onclick = ()=> selecionarAcompanhamento(div,nome);
+  grid.appendChild(div);
+});
+
+function selecionarTamanho(card, nome, valor, limiteMax){
+  document.querySelectorAll(".card").forEach(c=>c.classList.remove("selected"));
+  card.classList.add("selected");
+  tamanhoNome = nome;
+  tamanhoValor = valor;
+  limiteAtual = limiteMax;
+  limite.innerText = limiteMax;
+  total.innerText = valor;
+  contador.innerText = 0;
+  selecionados = [];
+  document.querySelectorAll(".item").forEach(i=>i.classList.remove("selected"));
+}
+
+function selecionarAcompanhamento(div,nome){
+  if(!tamanhoValor){
+    alert("Escolha o tamanho primeiro");
+    return;
+  }
+
+  if(div.classList.contains("selected")){
+    div.classList.remove("selected");
+    selecionados = selecionados.filter(i=>i!==nome);
+  }else{
+    if(selecionados.length >= limiteAtual){
+      alert("Limite atingido");
+      return;
+    }
+    div.classList.add("selected");
+    selecionados.push(nome);
+  }
+  contador.innerText = selecionados.length;
+}
+
+function abrirModal(){
+  if(!tamanhoValor){
+    alert("Escolha o tamanho");
+    return;
+  }
+  if(selecionados.length===0){
+    alert("Escolha pelo menos 1 acompanhamento");
+    return;
+  }
+
+  const telDigits = onlyDigits(telefoneEl.value);
+  if (!isValidBRPhone(telDigits)){
+    alert("Digite um telefone válido com DDD (10 ou 11 dígitos).");
+    return;
+  }
+
+  const nome = (nomeClienteEl.value || "").trim() || "Não informado";
+  const tipoEntrega = tipoEntregaEl.value;
+
+  if (tipoEntrega === "Entrega") {
+    const end = (enderecoEl.value || "").trim();
+    if (end.length < 10) {
+      alert("Para entrega, preencha o endereço completo.");
+      return;
+    }
+  }
+
+  let lista = "";
+  selecionados.forEach(i=>{ lista += `<div>• ${i.replace("-", " ")}</div>`; });
+
+  const entregaInfo = tipoEntrega === "Entrega"
+    ? `<p><strong>Entrega:</strong> ${escapeHtml((enderecoEl.value||"").trim())}<br><span style="color:#666;font-size:13px">${escapeHtml((referenciaEl.value||"").trim())}</span></p>`
+    : `<p><strong>Retirada no local</strong></p>`;
+
+  document.getElementById("resumoPedido").innerHTML = `
+    <p><strong>Telefone:</strong> ${escapeHtml(telDigits)}</p>
+    <p><strong>Cliente:</strong> ${escapeHtml(nome)}</p>
+    ${entregaInfo}
+    <p><strong>Tamanho:</strong> ${escapeHtml(tamanhoNome)} — R$ ${tamanhoValor}</p>
+    <p><strong>Acompanhamentos:</strong></p>
+    ${lista}
+    <p><strong>Total:</strong> R$ ${tamanhoValor}</p>
+  `;
+
+  document.getElementById("modalErro").textContent = "";
+  document.getElementById("modalOverlay").classList.add("active");
+}
+
+function fecharModal(){
+  document.getElementById("modalOverlay").classList.remove("active");
+}
+
+function escapeHtml(s){
+  return String(s||"").replace(/[&<>"']/g, (m)=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[m]));
+}
+
+/* ==============================
+   AUTO-PREENCHER POR TELEFONE
+============================== */
+async function buscarClientePorTelefone(){
+  clienteNote.style.display = "none";
+
+  const telDigits = onlyDigits(telefoneEl.value);
+  if (!isValidBRPhone(telDigits)) return;
+
+  try{
+    const r = await fetch(`/api/cliente?telefone=${encodeURIComponent(telDigits)}&t=${Date.now()}`, { cache: "no-store" });
+    const data = await r.json().catch(()=>({}));
+    if (!r.ok || !data.ok) return;
+
+    if (data.existe && data.cliente){
+      // preenche
+      if (!nomeClienteEl.value.trim()) nomeClienteEl.value = data.cliente.nome || "";
+      if ((tipoEntregaEl.value === "Entrega") && data.cliente.endereco && !enderecoEl.value.trim()) {
+        enderecoEl.value = data.cliente.endereco;
+      }
+      if ((tipoEntregaEl.value === "Entrega") && data.cliente.referencia && !referenciaEl.value.trim()) {
+        referenciaEl.value = data.cliente.referencia;
+      }
+
+      clienteNote.style.display = "block";
+      setTimeout(()=>{ clienteNote.style.display="none"; }, 3500);
+    }
+  }catch(e){}
+}
+
+// debounce
+telefoneEl.addEventListener("input", () => {
+  // salva sugestão no localStorage
+  try{
+    const telDigits = onlyDigits(telefoneEl.value);
+    if (telDigits.length >= 10) localStorage.setItem("wc_last_phone", telDigits);
+  }catch(e){}
+
+  clearTimeout(window.__telT);
+  window.__telT = setTimeout(buscarClientePorTelefone, 300);
+});
+
+// ao mudar para entrega, tenta preencher endereço se existir cliente
+tipoEntregaEl.addEventListener("change", () => {
+  boxEntrega.style.display = (tipoEntregaEl.value === "Entrega") ? "block" : "none";
+  if (tipoEntregaEl.value === "Entrega") buscarClientePorTelefone();
+});
+
+// sugestão inicial de telefone
+(function preloadPhone(){
+  try{
+    const last = localStorage.getItem("wc_last_phone");
+    if (last && !telefoneEl.value) {
+      telefoneEl.value = last;
+      buscarClientePorTelefone();
+    }
+  }catch(e){}
+})();
+
+async function confirmarPedido(){
+  const modalErro = document.getElementById("modalErro");
+  modalErro.textContent = "";
+
+  const telDigits = onlyDigits(telefoneEl.value);
+  if (!isValidBRPhone(telDigits)){
+    modalErro.textContent = "Telefone obrigatório (com DDD).";
+    return;
+  }
+
+  const nome = (nomeClienteEl.value || "").trim() || "Não informado";
+  const tipoEntrega = tipoEntregaEl.value;
+  const endereco = (enderecoEl.value || "").trim();
+  const referencia = (referenciaEl.value || "").trim();
+
+  try{
+    const resp = await fetch("/pedido", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({
+        telefone: telDigits,
+        nomeCliente: nome,
+        tamanho: tamanhoNome,
+        acompanhamentos: selecionados,
+        total: tamanhoValor,
+        tipoEntrega,
+        endereco,
+        referencia
+      })
+    });
+
+    const data = await resp.json().catch(()=>({}));
+    if(!resp.ok || !data.ok){
+      modalErro.textContent = data.erro || "Erro ao criar pedido.";
+      return;
+    }
+
+    // salva o último pedido
+    const payload = { id: data.pedido.id, token: data.pedido.token };
+    localStorage.setItem("wc_last_pedido", JSON.stringify(payload));
+
+    // salva telefone pra sugerir depois
+    localStorage.setItem("wc_last_phone", telDigits);
+
+    fecharModal();
+    window.location.href = `/rastreio.html?id=${data.pedido.id}&token=${encodeURIComponent(data.pedido.token)}`;
+  }catch(e){
+    modalErro.textContent = "Falha de conexão com o servidor.";
+  }
+}
+
+/* ✅ Acompanhar último pedido (manual) */
+function irUltimoPedido(){
+  try{
+    const raw = localStorage.getItem("wc_last_pedido");
+    if(!raw) return;
+    const p = JSON.parse(raw);
+    if(p && p.id && p.token){
+      window.location.href = `/rastreio.html?id=${p.id}&token=${encodeURIComponent(p.token)}`;
+    }
+  }catch(e){}
+}
+
+/* ✅ Só mostra o botão se existir pedido salvo */
+(function showUltimo(){
+  try{
+    const raw = localStorage.getItem("wc_last_pedido");
+    if(!raw) return;
+    const p = JSON.parse(raw);
+    if(p && p.id && p.token){
+      document.getElementById("boxUltimo").style.display = "block";
+    }
+  }catch(e){}
+})();
+</script>
+</body>
+</html>

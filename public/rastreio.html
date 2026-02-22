@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WC Açaíteria • Acompanhar pedido</title>
+
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#7c3aed" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="apple-touch-icon" href="/logo.png" />
+
+<style>
+  body{
+    margin:0;
+    font-family: Arial, sans-serif;
+    background:#f5f5f5;
+  }
+
+  .header{
+    background:#4b006e;
+    color:white;
+    padding:18px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .brand img{ width:42px; height:42px; border-radius:12px; object-fit:cover; }
+  .brand .title{
+    font-weight:bold;
+    font-size:16px;
+    line-height:1.1;
+  }
+  .brand .sub{
+    font-size:12px;
+    opacity:.9;
+    margin-top:4px;
+  }
+
+  .actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+  .btn{
+    border:none;
+    padding:10px 14px;
+    border-radius:10px;
+    font-weight:bold;
+    cursor:pointer;
+  }
+  .btnLight{
+    background:#fff;
+    color:#4b006e;
+  }
+  .btnPrimary{
+    background:#7c3aed;
+    color:#fff;
+  }
+
+  .section{
+    padding:20px;
+    max-width:900px;
+    margin:auto;
+  }
+
+  .card{
+    background:white;
+    border-radius:16px;
+    padding:16px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.08);
+    margin-bottom:14px;
+  }
+
+  .row{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:space-between;
+  }
+
+  h2{
+    color:#4b006e;
+    margin:0 0 10px;
+    font-size:18px;
+  }
+
+  .muted{
+    color:#666;
+    font-size:13px;
+    line-height:1.35;
+  }
+
+  .pillRow{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:10px;
+  }
+  .pill{
+    padding:7px 10px;
+    border-radius:999px;
+    border:1px solid #e6e6e6;
+    background:#fafafa;
+    font-size:12px;
+  }
+
+  .eta{
+    margin-top:12px;
+    padding:12px 14px;
+    border-radius:14px;
+    border:1px dashed #ddd;
+    background:#fafafa;
+  }
+  .eta b{ color:#4b006e; font-size:18px; }
+
+  .steps{
+    display:grid;
+    gap:10px;
+    margin-top:14px;
+  }
+  .step{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:12px 12px;
+    border-radius:14px;
+    border:1px solid #eee;
+    background:#fff;
+  }
+  .bullet{
+    width:12px;
+    height:12px;
+    border-radius:99px;
+    background:#ddd;
+  }
+  .step.active{
+    border-color:#4b006e;
+    background:#f6f0ff;
+  }
+  .step.active .bullet{ background:#4b006e; }
+  .step.done{
+    border-color:#22c55e;
+    background:#f0fff4;
+  }
+  .step.done .bullet{ background:#22c55e; }
+
+  .list{
+    display:grid;
+    gap:6px;
+    font-size:13px;
+    color:#222;
+  }
+  .list b{ color:#4b006e; }
+
+  .warn{
+    margin-top:10px;
+    color:#b91c1c;
+    font-size:13px;
+  }
+
+  .footerBox{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:12px;
+  }
+</style>
+</head>
+
+<body>
+  <div class="header">
+    <div class="brand">
+      <img src="logo.png" alt="WC" />
+      <div>
+        <div class="title">Acompanhar pedido</div>
+        <div class="sub" id="subTop">Carregando…</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btnLight" id="btnAtualizar">Atualizar</button>
+      <button class="btn btnPrimary" id="btnNovo">Novo pedido</button>
+    </div>
+  </div>
+
+  <div class="section">
+
+    <div class="card">
+      <div class="row">
+        <div>
+          <h2 id="pedidoTitle">Pedido</h2>
+          <div class="muted" id="badgeStatus">—</div>
+        </div>
+        <div class="pill" id="tipoPill">—</div>
+      </div>
+
+      <div class="pillRow" id="metaPills"></div>
+
+      <div class="eta" id="etaBox">
+        <div class="muted">Previsão estimada</div>
+        <b id="etaText">—</b>
+        <div class="muted">O tempo pode variar conforme demanda.</div>
+      </div>
+
+      <div class="steps">
+        <div class="step" id="s0"><div class="bullet"></div><div><b>Recebido</b><div class="muted">Pedido chegou na cozinha</div></div></div>
+        <div class="step" id="s1"><div class="bullet"></div><div><b>Em preparo</b><div class="muted">Estamos preparando seu açaí</div></div></div>
+        <div class="step" id="s2"><div class="bullet"></div><div><b>Saiu para entrega</b><div class="muted">Seu pedido saiu</div></div></div>
+        <div class="step" id="s3"><div class="bullet"></div><div><b>Finalizado</b><div class="muted">Pedido finalizado</div></div></div>
+      </div>
+
+      <div class="warn" id="err"></div>
+
+      <div class="footerBox">
+        <button class="btn btnLight" id="btnLimpar">Fazer novo pedido</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Detalhes</h2>
+      <div class="list" id="detalhes">Carregando…</div>
+    </div>
+
+  </div>
+
+<script src="/pwa.js" defer></script>
+<script>
+  const qs = new URLSearchParams(location.search);
+  const id = qs.get("id");
+  const token = qs.get("token");
+
+  const subTop = document.getElementById("subTop");
+  const pedidoTitle = document.getElementById("pedidoTitle");
+  const badgeStatus = document.getElementById("badgeStatus");
+  const tipoPill = document.getElementById("tipoPill");
+  const metaPills = document.getElementById("metaPills");
+  const detalhes = document.getElementById("detalhes");
+  const err = document.getElementById("err");
+
+  const btnAtualizar = document.getElementById("btnAtualizar");
+  const btnNovo = document.getElementById("btnNovo");
+  const btnLimpar = document.getElementById("btnLimpar");
+
+  function escapeHtml(s){
+    return String(s||"").replace(/[&<>"']/g, (m)=>({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[m]));
+  }
+
+  function statusIndex(status){
+    const list = ["Recebido","Em preparo","Saiu para entrega","Finalizado"];
+    const idx = list.indexOf(status);
+    return idx === -1 ? 0 : idx;
+  }
+
+  function setSteps(status){
+    const idx = statusIndex(status);
+    for(let i=0;i<4;i++){
+      const el = document.getElementById("s"+i);
+      el.classList.remove("active","done");
+      if(i < idx) el.classList.add("done");
+      if(i === idx) el.classList.add("active");
+    }
+  }
+
+  // ETA simples
+  function estimateMinutes(status, tipoEntrega){
+    if(status === "Recebido") return tipoEntrega === "Entrega" ? 35 : 20;
+    if(status === "Em preparo") return tipoEntrega === "Entrega" ? 25 : 12;
+    if(status === "Saiu para entrega") return 10;
+    if(status === "Finalizado") return 0;
+    return 0;
+  }
+
+  function fmtMoney(v){
+    // v já vem string tipo "12.00" no server
+    return String(v).replace(".", ",");
+  }
+
+  async function load(){
+    err.textContent = "";
+
+    if(!id || !token){
+      err.textContent = "Link inválido. Volte e faça um novo pedido.";
+      detalhes.textContent = "Nenhum pedido carregado.";
+      subTop.textContent = "—";
+      return;
+    }
+
+    try{
+      const r = await fetch(`/api/pedido/${id}?token=${encodeURIComponent(token)}&t=${Date.now()}`, {
+  cache: "no-store"
+});
+      const data = await r.json().catch(()=>({}));
+
+      if(!r.ok){
+        err.textContent = data.erro || "Erro ao carregar pedido.";
+        detalhes.textContent = "Não foi possível carregar os detalhes.";
+        subTop.textContent = "—";
+        return;
+      }
+
+      pedidoTitle.textContent = `Pedido #${data.id}`;
+      badgeStatus.textContent = `Status: ${data.status}`;
+
+      const criado = new Date(data.criadoEm).toLocaleString("pt-BR");
+      const atualizado = new Date().toLocaleTimeString("pt-BR");
+      subTop.textContent = `Atualizado ${atualizado} • Criado ${criado}`;
+
+      tipoPill.textContent = data.tipoEntrega === "Entrega" ? "🚚 Entrega" : "🏃 Retirada";
+
+      const pills = [];
+      pills.push(`<span class="pill">🥣 ${escapeHtml(data.tamanho)}</span>`);
+      pills.push(`<span class="pill">💰 R$ ${fmtMoney(data.total)}</span>`);
+      if(data.tipoEntrega === "Entrega" && data.endereco){
+        pills.push(`<span class="pill">📍 ${escapeHtml(data.endereco)}</span>`);
+      }
+      metaPills.innerHTML = pills.join("");
+
+      const mins = estimateMinutes(data.status, data.tipoEntrega);
+      document.getElementById("etaText").textContent = mins === 0 ? "Finalizado ✅" : `${mins} min`;
+
+      setSteps(data.status);
+
+      const items = [];
+      items.push(`<div><b>Cliente:</b> ${escapeHtml(data.nomeCliente || "Não informado")}</div>`);
+      items.push(`<div><b>Tamanho:</b> ${escapeHtml(data.tamanho)}</div>`);
+      items.push(`<div><b>Total:</b> R$ ${fmtMoney(data.total)}</div>`);
+      items.push(`<div><b>Tipo:</b> ${escapeHtml(data.tipoEntrega)}</div>`);
+
+      if(data.tipoEntrega === "Entrega"){
+        items.push(`<div><b>Endereço:</b> ${escapeHtml(data.endereco || "-")}</div>`);
+        items.push(`<div><b>Referência:</b> ${escapeHtml(data.referencia || "-")}</div>`);
+      }
+
+      items.push(`<div><b>Acompanhamentos:</b> ${(data.acompanhamentos || []).map(a => escapeHtml(String(a).replace("-", " "))).join(", ")}</div>`);
+      detalhes.innerHTML = items.join("<div style='height:6px'></div>");
+
+      // salva pra abrir automático depois
+      localStorage.setItem("wc_last_pedido", JSON.stringify({ id: data.id, token }));
+
+    }catch(e){
+      err.textContent = "Falha de conexão com o servidor.";
+      detalhes.textContent = "Verifique sua internet / Wi-Fi e tente novamente.";
+    }
+  }
+
+  btnAtualizar.addEventListener("click", load);
+  btnNovo.addEventListener("click", () => {
+    localStorage.removeItem("wc_last_pedido");
+    location.href = "/";
+  });
+
+  btnLimpar.addEventListener("click", () => {
+    localStorage.removeItem("wc_last_pedido");
+    location.href = "/";
+  });
+
+  load();
+  setInterval(load, 4000);
+</script>
+</body>
+</html>

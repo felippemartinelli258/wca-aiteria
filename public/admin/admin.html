@@ -1,0 +1,1337 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<link rel="manifest" href="/admin/manifest.json" />
+<meta name="theme-color" content="#7c3aed" />
+<link rel="apple-touch-icon" href="/logo.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WC Açaíteria • Admin</title>
+
+  <style>
+    :root{
+      --bg: #0b0b10;
+      --panel: rgba(18,18,26,.86);
+      --panel2: rgba(18,18,26,.58);
+      --border: rgba(255,255,255,.08);
+      --muted: rgba(255,255,255,.70);
+      --muted2: rgba(255,255,255,.55);
+      --text: #fff;
+      --accent: #7c3aed;
+      --accent2: rgba(124,58,237,.18);
+      --shadow: 0 18px 40px rgba(0,0,0,.35);
+      --radius: 18px;
+
+      --received: #f59e0b;
+      --prep: #60a5fa;
+      --out: #a78bfa;
+      --done: #22c55e;
+
+      --danger: #ff5b5b;
+    }
+
+    *{ box-sizing:border-box; }
+    html, body { height: 100%; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background:
+        radial-gradient(1100px 620px at 10% 0%, rgba(124,58,237,.18), transparent 60%),
+        radial-gradient(900px 560px at 90% 10%, rgba(124,58,237,.12), transparent 55%),
+        var(--bg);
+      color: var(--text);
+    }
+
+    /* Topbar */
+    .topbar{
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(12px);
+      background: rgba(11,11,16,.72);
+      border-bottom: 1px solid var(--border);
+    }
+    .topbar-inner{
+      width: 100%;
+      padding: 14px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width: 260px;
+    }
+    .logo{
+      width: 42px;
+      height: 42px;
+      border-radius: 16px;
+      display:grid;
+      place-items:center;
+      font-weight: 900;
+      letter-spacing: .5px;
+      background: var(--accent2);
+      border: 1px solid rgba(124,58,237,.40);
+      color: #eadcff;
+    }
+    .brand-title{
+      display:flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .brand-title b{
+      font-size: 15px;
+      letter-spacing: .2px;
+    }
+    .brand-title span{
+      font-size: 12px;
+      color: var(--muted2);
+    }
+
+    .top-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.04);
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .dot{
+      width:9px;height:9px;border-radius:999px;
+      background: var(--done);
+      box-shadow: 0 0 0 4px rgba(34,197,94,.18);
+      transition: .2s ease;
+    }
+    .dot.off{
+      background: rgba(255,255,255,.35);
+      box-shadow: none;
+    }
+
+    button, input, select{
+      font: inherit;
+      color: var(--text);
+      outline: none;
+    }
+    .btn{
+      border: 0;
+      background: var(--accent);
+      padding: 11px 16px;
+      border-radius: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(124,58,237,.18);
+    }
+    .btn:active{ transform: translateY(1px); }
+
+    .btn-ghost{
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--border);
+      box-shadow: none;
+      font-weight: 700;
+    }
+
+    .btn-danger{
+      background: rgba(255,91,91,.14);
+      border: 1px solid rgba(255,91,91,.22);
+      color: #ffd1d1;
+      box-shadow: none;
+    }
+
+    /* Fullscreen wrap */
+    .wrap{
+      width: 100%;
+      padding: 18px 22px 26px;
+    }
+
+    /* Filters + report top */
+    .grid-top{
+      display:grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 14px;
+      margin-top: 12px;
+    }
+    @media (max-width: 980px){
+      .grid-top{ grid-template-columns: 1fr; }
+    }
+
+    .panel{
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+
+    .filters{
+      display:flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+    .field{
+      display:flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 220px;
+      flex: 1;
+    }
+    .field label{
+      font-size: 12px;
+      color: var(--muted2);
+    }
+    .control{
+      background: rgba(255,255,255,.05);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 12px;
+      font-size: 14px;
+    }
+    .control:focus{
+      border-color: rgba(124,58,237,.6);
+      box-shadow: 0 0 0 4px rgba(124,58,237,.15);
+    }
+
+    /* Dashboard compacto (maior) */
+    .cards{
+      display:grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+    }
+    @media (max-width: 1200px){
+      .cards{ grid-template-columns: repeat(3, minmax(0,1fr)); }
+    }
+    @media (max-width: 720px){
+      .cards{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+
+    .card{
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px;
+      min-height: 92px;
+    }
+    .card .t{
+      font-size: 12px;
+      color: var(--muted2);
+    }
+    .card .v{
+      font-weight: 900;
+      font-size: 22px;
+      margin-top: 8px;
+      letter-spacing: .2px;
+    }
+    .card .s{
+      font-size: 12px;
+      color: var(--muted2);
+      margin-top: 8px;
+    }
+
+    .dash{
+      margin-top: 14px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 980px){
+      .dash{ grid-template-columns: 1fr; }
+    }
+
+    .stack{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .miniRow{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px;
+    }
+    .miniRow .left{
+      display:flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .miniRow .left b{
+      font-size: 13px;
+    }
+    .miniRow .left span{
+      font-size: 12px;
+      color: var(--muted2);
+    }
+    .miniRow .right{
+      font-weight: 900;
+      font-size: 18px;
+    }
+
+    /* Kanban bigger */
+    .kanban{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(320px, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+      align-items: start;
+    }
+    @media (max-width: 1300px){
+      .kanban{ grid-template-columns: repeat(2, minmax(320px, 1fr)); }
+    }
+    @media (max-width: 760px){
+      .kanban{ grid-template-columns: 1fr; }
+    }
+
+    .col{
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      min-height: 260px;
+    }
+    .col-header{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 14px 14px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,.10);
+    }
+    .col-title{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      font-weight: 900;
+      letter-spacing: .2px;
+      font-size: 14px;
+    }
+    .pill{
+      font-size: 12px;
+      color: rgba(255,255,255,.85);
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.05);
+    }
+    .bar{
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+    }
+
+    .col-body{
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .empty{
+      border: 1px dashed rgba(255,255,255,.14);
+      border-radius: 18px;
+      padding: 16px;
+      color: var(--muted2);
+      font-size: 13px;
+      background: rgba(0,0,0,.12);
+    }
+
+    /* Orders */
+    .order{
+      background: rgba(18,18,26,.92);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 14px;
+      box-shadow: 0 10px 25px rgba(0,0,0,.22);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .order.new{
+      border-color: rgba(124,58,237,.55);
+      box-shadow: 0 12px 30px rgba(124,58,237,.18), 0 10px 25px rgba(0,0,0,.22);
+    }
+    .order.new::after{
+      content:"NOVO";
+      position:absolute;
+      top:10px;
+      right:-34px;
+      transform: rotate(35deg);
+      background: rgba(124,58,237,.9);
+      color: #fff;
+      font-weight: 900;
+      font-size: 11px;
+      padding: 6px 44px;
+      border-radius: 999px;
+      box-shadow: 0 10px 20px rgba(124,58,237,.25);
+      letter-spacing: .6px;
+    }
+
+    .order-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .order-id{
+      font-weight: 900;
+      font-size: 15px;
+    }
+    .order-sub{
+      margin-top: 6px;
+      color: var(--muted2);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+    .order-price{
+      font-weight: 900;
+      font-size: 15px;
+      color: #fff;
+      white-space: nowrap;
+    }
+    .badgestatus{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      margin-top: 10px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.04);
+      font-size: 12px;
+      color: rgba(255,255,255,.88);
+    }
+
+    .items{
+      display:flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .tag{
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.04);
+      font-size: 12px;
+      color: rgba(255,255,255,.86);
+    }
+
+    .order-actions{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .mini{
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      cursor: pointer;
+      font-weight: 800;
+      font-size: 12px;
+    }
+    .mini-primary{
+      background: var(--accent);
+      border: 0;
+    }
+    .mini-danger{
+      background: rgba(255,91,91,.14);
+      border: 1px solid rgba(255,91,91,.22);
+      color: #ffd1d1;
+    }
+
+    /* Toast */
+    .toast{
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 999;
+      background: rgba(18,18,26,.92);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      border-radius: 18px;
+      padding: 12px 14px;
+      color: rgba(255,255,255,.9);
+      min-width: 260px;
+      max-width: 92vw;
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events:none;
+      transition: .22s ease;
+    }
+    .toast.show{
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .toast b{ display:block; margin-bottom: 4px; }
+    .toast small{ color: var(--muted2); }
+
+    /* ===== Modal Histórico ===== */
+    .modal-overlay{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(10px);
+      display:flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: .2s ease;
+      z-index: 9999;
+    }
+    .modal-overlay.active{
+      opacity: 1;
+      pointer-events: all;
+    }
+    .modal{
+      width: min(920px, 92vw);
+      max-height: 86vh;
+      overflow: auto;
+      background: rgba(18,18,26,.96);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      border-radius: 22px;
+      padding: 16px;
+    }
+    .modal-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-head h3{
+      margin: 0;
+      font-size: 15px;
+      letter-spacing: .2px;
+    }
+    .modal-head .sub{
+      color: var(--muted2);
+      font-size: 12px;
+      margin-top: 6px;
+      line-height: 1.35;
+    }
+    .xbtn{
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      border-radius: 14px;
+      padding: 10px 12px;
+      cursor: pointer;
+      font-weight: 900;
+    }
+    .modal-grid{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+    @media (max-width: 980px){
+      .modal-grid{ grid-template-columns: 1fr; }
+    }
+    .miniPanel{
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px;
+    }
+    .miniPanel .t{ color: var(--muted2); font-size: 12px; }
+    .miniPanel .v{ font-weight: 900; font-size: 18px; margin-top: 8px; }
+    .histList{
+      display:grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .histItem{
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 12px;
+    }
+    .histTop{
+      display:flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items:flex-start;
+    }
+    .histTop b{ font-size: 13px; }
+    .histTop span{ color: var(--muted2); font-size: 12px; }
+    .mutedLine{ color: var(--muted2); font-size: 12px; margin-top: 6px; line-height: 1.35; }
+    .hr{
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 10px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="logo">WC</div>
+        <div class="brand-title">
+          <b>WC AÇAÍTERIA • Admin</b>
+          <span id="subtitle">Carregando…</span>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <div class="chip" title="Auto atualização (a cada 5s)">
+          <span class="dot" id="dot"></span>
+          <span id="autoLabel">Auto: ON</span>
+        </div>
+        <button class="btn btn-ghost" id="btnSound">Som: ON</button>
+        <button class="btn btn-ghost" id="btnTest">Testar som</button>
+        <button class="btn btn-ghost" id="btnRefresh">Atualizar</button>
+        <button class="btn btn-ghost" id="btnAuto">Alternar Auto</button>
+        <button class="btn btn-danger" id="btnLogout">Sair</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="grid-top">
+      <div class="panel">
+        <div class="filters">
+          <div class="field">
+            <label>Dia</label>
+            <input class="control" id="date" type="date" />
+          </div>
+
+          <div class="field">
+            <label>Buscar (nome / telefone / tamanho / item)</label>
+            <input class="control" id="q" type="text" placeholder="Ex: João, 79999999999, 500ml, nutella..." />
+          </div>
+
+          <div class="field" style="min-width:260px;flex:0;">
+            <label>Status (filtro rápido)</label>
+            <select class="control" id="statusFilter">
+              <option value="">Todos</option>
+              <option value="Recebido">Recebido</option>
+              <option value="Em preparo">Em preparo</option>
+              <option value="Saiu para entrega">Saiu para entrega</option>
+              <option value="Finalizado">Finalizado</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="cards">
+          <div class="card">
+            <div class="t">Total hoje</div>
+            <div class="v" id="rHojeTotal">—</div>
+            <div class="s" id="rBaseDate">—</div>
+          </div>
+          <div class="card">
+            <div class="t">Pedidos hoje</div>
+            <div class="v" id="rHojePedidos">—</div>
+            <div class="s">quantidade</div>
+          </div>
+          <div class="card">
+            <div class="t">Ticket médio</div>
+            <div class="v" id="rHojeTicket">—</div>
+            <div class="s">hoje</div>
+          </div>
+          <div class="card">
+            <div class="t">Tamanho campeão</div>
+            <div class="v" id="rHojeTamanho">—</div>
+            <div class="s">hoje</div>
+          </div>
+          <div class="card">
+            <div class="t">Hora pico</div>
+            <div class="v" id="rHojePico">—</div>
+            <div class="s">hoje</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash">
+      <div class="panel">
+        <div class="stack">
+          <div class="miniRow">
+            <div class="left">
+              <b>Semana</b>
+              <span id="rSemanaRange">—</span>
+            </div>
+            <div class="right" id="rSemanaTotal">—</div>
+          </div>
+
+          <div class="miniRow">
+            <div class="left">
+              <b>Mês</b>
+              <span id="rMesRef">—</span>
+            </div>
+            <div class="right" id="rMesTotal">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="stack">
+          <div class="miniRow">
+            <div class="left">
+              <b>Pedidos na semana</b>
+              <span>quantidade</span>
+            </div>
+            <div class="right" id="rSemanaPedidos">—</div>
+          </div>
+
+          <div class="miniRow">
+            <div class="left">
+              <b>Pedidos no mês</b>
+              <span>quantidade</span>
+            </div>
+            <div class="right" id="rMesPedidos">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="kanban" id="kanban"></div>
+  </div>
+
+  <!-- Modal Histórico -->
+  <div class="modal-overlay" id="histOverlay">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <h3 id="histTitle">Histórico do cliente</h3>
+          <div class="sub" id="histSub">—</div>
+        </div>
+        <button class="xbtn" id="histClose">Fechar ✕</button>
+      </div>
+
+      <div class="modal-grid">
+        <div class="miniPanel">
+          <div class="t">Resumo</div>
+          <div class="v" id="histResumo">Carregando…</div>
+          <div class="mutedLine" id="histCliente">—</div>
+          <div class="hr"></div>
+          <div class="t">Pedidos</div>
+          <div class="histList" id="histList"></div>
+        </div>
+
+        <div class="miniPanel">
+          <div class="t">Observação</div>
+          <div class="mutedLine">
+            • Esse histórico é pelo <b>telefone</b> do cliente.<br/>
+            • Mostra até <b>200</b> pedidos mais recentes.
+          </div>
+          <div class="hr"></div>
+          <div class="t">Ações</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+            <button class="btn btn-ghost" id="histRefresh">Atualizar histórico</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">
+    <b id="toastTitle">OK</b>
+    <small id="toastMsg">…</small>
+  </div>
+
+  <script>
+    const dateEl = document.getElementById('date');
+    const qEl = document.getElementById('q');
+    const statusFilterEl = document.getElementById('statusFilter');
+
+    const subtitle = document.getElementById('subtitle');
+
+    const btnRefresh = document.getElementById('btnRefresh');
+    const btnLogout = document.getElementById('btnLogout');
+    const btnAuto = document.getElementById('btnAuto');
+    const autoLabel = document.getElementById('autoLabel');
+    const dot = document.getElementById('dot');
+
+    const btnSound = document.getElementById('btnSound');
+    const btnTest = document.getElementById('btnTest');
+
+    const kanbanEl = document.getElementById('kanban');
+
+    const toast = document.getElementById('toast');
+    const toastTitle = document.getElementById('toastTitle');
+    const toastMsg = document.getElementById('toastMsg');
+
+    // Modal histórico
+    const histOverlay = document.getElementById("histOverlay");
+    const histClose = document.getElementById("histClose");
+    const histRefresh = document.getElementById("histRefresh");
+    const histTitle = document.getElementById("histTitle");
+    const histSub = document.getElementById("histSub");
+    const histResumo = document.getElementById("histResumo");
+    const histCliente = document.getElementById("histCliente");
+    const histList = document.getElementById("histList");
+    let histTelefoneAtual = null;
+
+    // Relatório DOM
+    const rBaseDate = document.getElementById("rBaseDate");
+    const rHojeTotal = document.getElementById("rHojeTotal");
+    const rHojePedidos = document.getElementById("rHojePedidos");
+    const rHojeTicket = document.getElementById("rHojeTicket");
+    const rHojeTamanho = document.getElementById("rHojeTamanho");
+    const rHojePico = document.getElementById("rHojePico");
+
+    const rSemanaRange = document.getElementById("rSemanaRange");
+    const rSemanaTotal = document.getElementById("rSemanaTotal");
+    const rSemanaPedidos = document.getElementById("rSemanaPedidos");
+
+    const rMesRef = document.getElementById("rMesRef");
+    const rMesTotal = document.getElementById("rMesTotal");
+    const rMesPedidos = document.getElementById("rMesPedidos");
+
+    const STATUS = [
+      { key: "Recebido", color: "var(--received)" },
+      { key: "Em preparo", color: "var(--prep)" },
+      { key: "Saiu para entrega", color: "var(--out)" },
+      { key: "Finalizado", color: "var(--done)" },
+    ];
+
+    // default: hoje
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2,'0');
+    const dd = String(now.getDate()).padStart(2,'0');
+    dateEl.value = `${yyyy}-${mm}-${dd}`;
+
+    let autoOn = true;
+    let timer = null;
+
+    // Som / detecção de novos pedidos
+    let soundOn = true;
+
+    // Audio
+    let audioUnlocked = false;
+    let audioCtx = null;
+
+    let seenIds = new Set();
+    let highlightIds = new Set();
+
+    function onlyDigits(s){ return String(s||"").replace(/\D/g,""); }
+
+    function brl(n){
+      const v = Number(String(n).replace(",", "."));
+      return v.toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+    }
+
+    function showToast(title, msg){
+      toastTitle.textContent = title;
+      toastMsg.textContent = msg || "";
+      toast.classList.add("show");
+      clearTimeout(window.__toastT);
+      window.__toastT = setTimeout(() => toast.classList.remove("show"), 2300);
+    }
+
+    async function fetchJSON(url, opts){
+      const r = await fetch(url, opts);
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.erro || 'Erro');
+      return d;
+    }
+
+    function sameDayISO(iso, day){
+      return String(iso || "").startsWith(day);
+    }
+
+    function normalizeText(s){
+      return String(s || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function buildColumns(){
+      kanbanEl.innerHTML = "";
+      for (const st of STATUS){
+        const col = document.createElement("div");
+        col.className = "col";
+        col.innerHTML = `
+          <div class="col-header">
+            <div class="col-title">
+              <span class="bar" style="background:${st.color}"></span>
+              <span>${st.key}</span>
+            </div>
+            <span class="pill" id="count-${cssId(st.key)}">0</span>
+          </div>
+          <div class="col-body" id="body-${cssId(st.key)}"></div>
+        `;
+        kanbanEl.appendChild(col);
+      }
+    }
+
+    function cssId(status){
+      return status.replaceAll(" ", "-").toLowerCase();
+    }
+
+    function statusBadge(status){
+      const map = {
+        "Recebido": "var(--received)",
+        "Em preparo": "var(--prep)",
+        "Saiu para entrega": "var(--out)",
+        "Finalizado": "var(--done)",
+      };
+      const color = map[status] || "rgba(255,255,255,.6)";
+      return `<span class="badgestatus"><span class="bar" style="background:${color};width:8px;height:8px;"></span>${status}</span>`;
+    }
+
+    function orderCard(p){
+      const created = new Date(p.criadoEm).toLocaleString('pt-BR');
+      const items = (p.acompanhamentos || []).map(a => `<span class="tag">${a.replace("-", " ")}</span>`).join("");
+
+      const tel = p.telefone || "";
+      const telMask = p.telefoneMascarado || "";
+      const telLine = tel ? `📱 ${telMask || tel}<br/>` : "";
+
+      const isNew = highlightIds.has(Number(p.id));
+      const cls = isNew ? "order new" : "order";
+
+      return `
+        <div class="${cls}">
+          <div class="order-top">
+            <div>
+              <div class="order-id">Pedido #${p.id}</div>
+              <div class="order-sub">
+                👤 ${p.nomeCliente || "Não informado"}<br/>
+                ${telLine}
+                🥣 ${p.tamanho}<br/>
+                🕒 ${created}
+              </div>
+              ${statusBadge(p.status)}
+            </div>
+            <div class="order-price">${brl(p.total)}</div>
+          </div>
+
+          <div class="items">${items}</div>
+
+          <div class="order-actions">
+            ${p.status !== "Recebido" ? `<button class="mini" data-action="status" data-id="${p.id}" data-status="Recebido">Recebido</button>` : ""}
+            ${p.status !== "Em preparo" ? `<button class="mini" data-action="status" data-id="${p.id}" data-status="Em preparo">Em preparo</button>` : ""}
+            ${p.status !== "Saiu para entrega" ? `<button class="mini" data-action="status" data-id="${p.id}" data-status="Saiu para entrega">Saiu</button>` : ""}
+            ${p.status !== "Finalizado" ? `<button class="mini mini-primary" data-action="status" data-id="${p.id}" data-status="Finalizado">Finalizar</button>` : ""}
+
+            ${tel ? `<button class="mini" data-action="history" data-phone="${tel}">Histórico</button>` : ""}
+            <button class="mini mini-danger" data-action="delete" data-id="${p.id}">Excluir</button>
+          </div>
+        </div>
+      `;
+    }
+
+    async function updateStatus(id, status){
+      await fetchJSON(`/pedido/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify({ status })
+      });
+      showToast("Status atualizado", `Pedido #${id} → ${status}`);
+      await load(true);
+    }
+
+    async function deleteOrder(id){
+      await fetchJSON(`/pedido/${id}`, { method: "DELETE" });
+      showToast("Pedido removido", `Pedido #${id} foi excluído`);
+      await load(true);
+    }
+
+    function wireActions(container){
+      container.querySelectorAll("button[data-action]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const action = btn.getAttribute("data-action");
+
+          try{
+            if (action === "status"){
+              const id = btn.getAttribute("data-id");
+              const st = btn.getAttribute("data-status");
+              await updateStatus(id, st);
+            }
+
+            if (action === "delete"){
+              const id = btn.getAttribute("data-id");
+              if (!confirm(`Excluir pedido #${id}?`)) return;
+              await deleteOrder(id);
+            }
+
+            if (action === "history"){
+              const phone = btn.getAttribute("data-phone");
+              abrirHistorico(phone);
+            }
+
+          }catch(e){
+            alert(e.message || "Erro");
+          }
+        });
+      });
+    }
+
+    // ---------- MODAL HISTÓRICO ----------
+    function abrirHistorico(phone){
+      const telDigits = onlyDigits(phone);
+      if (!telDigits) return;
+
+      histTelefoneAtual = telDigits;
+      histTitle.textContent = `Histórico do cliente`;
+      histSub.textContent = `Telefone: ${telDigits}`;
+      histResumo.textContent = "Carregando…";
+      histCliente.textContent = "—";
+      histList.innerHTML = "";
+
+      histOverlay.classList.add("active");
+      carregarHistorico(true);
+    }
+
+    function fecharHistorico(){
+      histOverlay.classList.remove("active");
+      histTelefoneAtual = null;
+    }
+
+    async function carregarHistorico(showToastOnFail){
+      const tel = histTelefoneAtual;
+      if (!tel) return;
+
+      try{
+        const data = await fetchJSON(`/api/admin/cliente/${encodeURIComponent(tel)}/pedidos?t=${Date.now()}`);
+        const pedidos = data.pedidos || [];
+        const cliente = data.cliente;
+
+        // resumo
+        const totalPedidos = pedidos.length;
+        const totalValor = pedidos.reduce((acc, p) => acc + Number(String(p.total).replace(",", ".")), 0);
+        const ultimo = pedidos[0];
+        const ultimoTxt = ultimo ? `Último pedido #${ultimo.id} (${new Date(ultimo.criadoEm).toLocaleString("pt-BR")})` : "Sem pedidos";
+
+        histResumo.textContent = `${totalPedidos} pedido(s) • ${brl(totalValor)} • ${ultimoTxt}`;
+
+        if (cliente){
+          const end = cliente.endereco ? `📍 ${cliente.endereco}` : "📍 (sem endereço salvo)";
+          const ref = cliente.referencia ? ` • Ref: ${cliente.referencia}` : "";
+          histCliente.textContent = `👤 ${cliente.nome || "—"} • ${end}${ref}`;
+        }else{
+          histCliente.textContent = "Cliente não encontrado na tabela clientes (mas pode ter pedidos antigos).";
+        }
+
+        if (!pedidos.length){
+          histList.innerHTML = `<div class="empty">Nenhum pedido encontrado para esse telefone.</div>`;
+          return;
+        }
+
+        histList.innerHTML = pedidos.map(p => {
+          const created = new Date(p.criadoEm).toLocaleString("pt-BR");
+          const itens = (p.acompanhamentos||[]).map(i => i.replace("-", " ")).join(", ");
+          const entrega = p.tipoEntrega === "Entrega"
+            ? `🚚 Entrega • ${p.endereco || ""}`
+            : `🏃 Retirada`;
+
+          return `
+            <div class="histItem">
+              <div class="histTop">
+                <div>
+                  <b>#${p.id} • ${p.status}</b><br/>
+                  <span>${created}</span>
+                </div>
+                <div style="font-weight:900;">${brl(p.total)}</div>
+              </div>
+              <div class="mutedLine">🥣 ${p.tamanho} • ${entrega}</div>
+              <div class="mutedLine">🍫 ${itens || "—"}</div>
+            </div>
+          `;
+        }).join("");
+
+      }catch(e){
+        if (showToastOnFail) showToast("Histórico", "Falha ao carregar histórico");
+      }
+    }
+
+    histClose.addEventListener("click", fecharHistorico);
+    histOverlay.addEventListener("click", (e) => { if (e.target === histOverlay) fecharHistorico(); });
+    histRefresh.addEventListener("click", () => carregarHistorico(true));
+    window.addEventListener("keydown", (e) => { if (e.key === "Escape" && histOverlay.classList.contains("active")) fecharHistorico(); });
+
+    // ---------- AUDIO ----------
+    function getCtx(){
+      if (audioCtx) return audioCtx;
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AudioContext();
+      return audioCtx;
+    }
+
+    async function unlockAudio(){
+      try{
+        const ctx = getCtx();
+        if (ctx.state === "suspended") await ctx.resume();
+
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        g.gain.value = 0.00001;
+        o.connect(g);
+        g.connect(ctx.destination);
+        o.start();
+        o.stop(ctx.currentTime + 0.01);
+
+        audioUnlocked = true;
+        showToast("Som liberado", "Agora o painel pode tocar alertas.");
+      }catch(e){}
+    }
+
+    function setupUnlock(){
+      const handler = async () => {
+        if (!audioUnlocked) await unlockAudio();
+        window.removeEventListener("pointerdown", handler);
+        window.removeEventListener("keydown", handler);
+      };
+      window.addEventListener("pointerdown", handler, { once:false });
+      window.addEventListener("keydown", handler, { once:false });
+    }
+
+    function beepDouble(){
+      if (!soundOn) return;
+
+      try{
+        const ctx = getCtx();
+        if (ctx.state === "suspended") return;
+
+        const now = ctx.currentTime;
+
+        function tone(freq, start, dur, vol){
+          const o = ctx.createOscillator();
+          const g = ctx.createGain();
+          o.type = "sine";
+          o.frequency.value = freq;
+
+          g.gain.setValueAtTime(0.00001, start);
+          g.gain.exponentialRampToValueAtTime(vol, start + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.00001, start + dur);
+
+          o.connect(g);
+          g.connect(ctx.destination);
+
+          o.start(start);
+          o.stop(start + dur + 0.02);
+        }
+
+        const VOL = 0.55;
+        tone(880, now + 0.00, 0.18, VOL);
+        tone(660, now + 0.22, 0.22, VOL);
+
+      }catch(e){}
+    }
+
+    function detectNewOrders(allPedidos){
+      if (seenIds.size === 0){
+        allPedidos.forEach(p => seenIds.add(Number(p.id)));
+        return;
+      }
+
+      const newOnes = allPedidos
+        .map(p => Number(p.id))
+        .filter(id => id && !seenIds.has(id));
+
+      if (newOnes.length){
+        newOnes.forEach(id => {
+          seenIds.add(id);
+          highlightIds.add(id);
+        });
+
+        setTimeout(() => {
+          newOnes.forEach(id => highlightIds.delete(id));
+          load(true);
+        }, 20000);
+
+        beepDouble();
+        showToast("🔔 Pedido novo!", `${newOnes.length} novo(s) pedido(s) chegou(ram)`);
+      }
+    }
+
+    // ---------- RELATÓRIO ----------
+    function applyRelatorio(r){
+      rBaseDate.textContent = `Dia: ${r.baseDate}`;
+
+      rHojeTotal.textContent = brl(r.hoje.total);
+      rHojePedidos.textContent = String(r.hoje.pedidos);
+      rHojeTicket.textContent = brl(r.hoje.ticketMedio);
+      rHojeTamanho.textContent = r.hoje.tamanhoMaisVendido || "—";
+      rHojePico.textContent = r.hoje.horaPico || "—";
+
+      rSemanaRange.textContent = `${r.semana.inicio} → ${r.semana.fim}`;
+      rSemanaTotal.textContent = brl(r.semana.total);
+      rSemanaPedidos.textContent = String(r.semana.pedidos);
+
+      rMesRef.textContent = r.mes.ref;
+      rMesTotal.textContent = brl(r.mes.total);
+      rMesPedidos.textContent = String(r.mes.pedidos);
+    }
+
+    async function loadRelatorio(silent){
+      try{
+        const date = dateEl.value;
+        const r = await fetchJSON(`/api/relatorio?date=${encodeURIComponent(date)}`);
+        applyRelatorio(r);
+      }catch(e){
+        if (!silent) showToast("Relatório", "Falha ao carregar relatório");
+      }
+    }
+
+    // ---------- LOAD PRINCIPAL ----------
+    async function load(silent=false){
+      buildColumns();
+
+      let pedidos;
+      try{
+        pedidos = await fetchJSON("/pedidos");
+      }catch(e){
+        window.location.href = "/admin/login.html";
+        return;
+      }
+
+      await loadRelatorio(true);
+
+      if (!silent) detectNewOrders(pedidos);
+
+      const date = dateEl.value;
+      const q = normalizeText(qEl.value.trim());
+      const qDigits = onlyDigits(qEl.value.trim());
+      const statusFilter = statusFilterEl.value;
+
+      let list = pedidos.filter(p => sameDayISO(p.criadoEm, date));
+      if (statusFilter) list = list.filter(p => p.status === statusFilter);
+
+      if (q){
+        list = list.filter(p => {
+          const nome = normalizeText(p.nomeCliente);
+          const tam = normalizeText(p.tamanho);
+          const itens = normalizeText((p.acompanhamentos || []).join(" "));
+          const tel = String(p.telefone || "");
+          const telMask = String(p.telefoneMascarado || "");
+          const telDigits = onlyDigits(tel);
+
+          const phoneMatch = qDigits ? telDigits.includes(qDigits) : false;
+
+          return nome.includes(q) || tam.includes(q) || itens.includes(q) || telMask.includes(q) || phoneMatch;
+        });
+      }
+
+      subtitle.textContent = `Atualizado: ${new Date().toLocaleString('pt-BR')} • Dia: ${date}`;
+
+      const byStatus = {
+        "Recebido": [],
+        "Em preparo": [],
+        "Saiu para entrega": [],
+        "Finalizado": []
+      };
+
+      for (const p of list){
+        if (!byStatus[p.status]) byStatus[p.status] = [];
+        byStatus[p.status].push(p);
+      }
+
+      for (const st of STATUS){
+        const arr = byStatus[st.key] || [];
+        const countEl = document.getElementById(`count-${cssId(st.key)}`);
+        const bodyEl = document.getElementById(`body-${cssId(st.key)}`);
+        countEl.textContent = arr.length;
+
+        if (!arr.length){
+          bodyEl.innerHTML = `<div class="empty">Nenhum pedido aqui.</div>`;
+          continue;
+        }
+
+        bodyEl.innerHTML = arr.map(orderCard).join("");
+        wireActions(bodyEl);
+      }
+    }
+
+    function startAuto(){
+      stopAuto();
+      timer = setInterval(() => { if (autoOn) load(false); }, 5000);
+      autoLabel.textContent = autoOn ? "Auto: ON" : "Auto: OFF";
+      dot.classList.toggle("off", !autoOn);
+    }
+    function stopAuto(){
+      if (timer) clearInterval(timer);
+      timer = null;
+    }
+
+    // Events
+    btnRefresh.addEventListener("click", () => load(false));
+
+    btnAuto.addEventListener("click", () => {
+      autoOn = !autoOn;
+      autoLabel.textContent = autoOn ? "Auto: ON" : "Auto: OFF";
+      dot.classList.toggle("off", !autoOn);
+      if (autoOn) startAuto();
+      else stopAuto();
+      showToast("Auto atualização", autoOn ? "Ativada (5s)" : "Desativada");
+    });
+
+    btnSound.addEventListener("click", async () => {
+      soundOn = !soundOn;
+      btnSound.textContent = soundOn ? "Som: ON" : "Som: OFF";
+      if (soundOn && !audioUnlocked) await unlockAudio();
+      showToast("Som", soundOn ? "Ativado" : "Desativado");
+    });
+
+    btnTest.addEventListener("click", async () => {
+      if (!audioUnlocked) await unlockAudio();
+      beepDouble();
+      showToast("Teste", "Som disparado");
+    });
+
+    btnLogout.addEventListener("click", async () => {
+      await fetch("/api/admin/logout", { method: "POST" });
+      window.location.href = "/admin/login.html";
+    });
+
+    dateEl.addEventListener("change", async () => {
+      await loadRelatorio(false);
+      await load(true);
+    });
+
+    statusFilterEl.addEventListener("change", () => load(true));
+
+    qEl.addEventListener("input", () => {
+      clearTimeout(window.__qT);
+      window.__qT = setTimeout(() => load(true), 200);
+    });
+
+    // Init
+    setupUnlock();
+    load(true);
+    startAuto();
+    showToast("Painel pronto", "Clique uma vez na tela para liberar o som.");
+  </script>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", async () => {
+        try {
+          await navigator.serviceWorker.register("/service-worker.js");
+        } catch (e) {}
+      });
+    }
+  </script>
+  <script src="/pwa.js" defer></script>
+</body>
+</html>

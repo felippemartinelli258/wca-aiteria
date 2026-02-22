@@ -1,0 +1,38 @@
+{
+  "id": "/admin?source=pwa-admin",
+  "name": "WC Açaíteria • Admin",
+  "short_name": "WC Admin",
+  "description": "Painel de pedidos - Admin",
+  "start_url": "/admin?source=pwa-admin",
+  "scope": "/admin/",
+  "display": "standalone",
+  "background_color": "#0b0b10",
+  "theme_color": "#7c3aed",
+  "icons": [
+    { "src": "/logo.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/logo.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Abrir painel",
+      "short_name": "Painel",
+      "description": "Abrir o Kanban de pedidos",
+      "url": "/admin?source=shortcut-painel",
+      "icons": [{ "src": "/logo.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Login admin",
+      "short_name": "Login",
+      "description": "Entrar com senha do admin",
+      "url": "/admin/login?source=shortcut-login",
+      "icons": [{ "src": "/logo.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Tela do cliente",
+      "short_name": "Cliente",
+      "description": "Voltar ao app do cliente",
+      "url": "/?source=shortcut-cliente",
+      "icons": [{ "src": "/logo.png", "sizes": "192x192" }]
+    }
+  ]
+}
