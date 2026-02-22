@@ -1,12 +1,7 @@
 const Database = require("better-sqlite3");
-const path = require("path");
 
-// ✅ Render Disk: use SQLITE_PATH=/var/data/data.sqlite
-const dbPath = process.env.SQLITE_PATH
-  ? process.env.SQLITE_PATH
-  : path.join(__dirname, "data.sqlite");
-
-const db = new Database(dbPath);
+// 🔹 Versão gratuita (sem Render Disk)
+const db = new Database("data.sqlite");
 db.pragma("journal_mode = WAL");
 
 /* ==============================
@@ -32,14 +27,14 @@ function ensureColumn(table, name, sqlType, defaultSQL = null) {
   db.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${sqlType}${def};`);
 }
 
-// pedidos: novas colunas
+// 🔹 novas colunas em pedidos
 ensureColumn("pedidos", "tipo_entrega", "TEXT", "'Retirada'");
 ensureColumn("pedidos", "endereco", "TEXT");
 ensureColumn("pedidos", "referencia", "TEXT");
 ensureColumn("pedidos", "public_token", "TEXT");
 ensureColumn("pedidos", "cliente_telefone", "TEXT");
 
-// índices
+// 🔹 índices
 db.exec(`
   CREATE INDEX IF NOT EXISTS idx_pedidos_created_at ON pedidos(created_at);
   CREATE INDEX IF NOT EXISTS idx_pedidos_status ON pedidos(status);
@@ -48,7 +43,7 @@ db.exec(`
 `);
 
 /* ==============================
-   CLIENTES (novo)
+   CLIENTES
 ============================== */
 db.exec(`
   CREATE TABLE IF NOT EXISTS clientes (
@@ -63,7 +58,7 @@ db.exec(`
 `);
 
 /* ==============================
-   Preenche tokens faltando em pedidos antigos
+   Preenche tokens faltando
 ============================== */
 try {
   const rows = db.prepare(`
@@ -74,8 +69,9 @@ try {
   if (rows.length) {
     const upd = db.prepare(`UPDATE pedidos SET public_token = ? WHERE id = ?`);
     for (const r of rows) {
-      const token = (Math.random().toString(16).slice(2) + Math.random().toString(16).slice(2))
-        .slice(0, 32);
+      const token =
+        (Math.random().toString(16).slice(2) +
+         Math.random().toString(16).slice(2)).slice(0, 32);
       upd.run(token, r.id);
     }
   }
